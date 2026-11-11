@@ -92,7 +92,7 @@ public class AccountController : Controller
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        await Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<AcxiomCRM.Services.IAuditService>(HttpContext.RequestServices).LogAsync("Logout", "Auth"); await _signInManager.SignOutAsync();
         return RedirectToAction("Login");
     }
 

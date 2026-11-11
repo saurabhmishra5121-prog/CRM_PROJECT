@@ -12,13 +12,13 @@ namespace AcxiomCRM.Controllers;
 public class CustomersController : Controller
 {
     private const int PageSize = 10;
-    private readonly ApplicationDbContext _db;
+    private readonly ApplicationDbContext _db; private readonly AcxiomCRM.Services.IAuditService _audit;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public CustomersController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public CustomersController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, AcxiomCRM.Services.IAuditService audit)
     {
         _db = db;
-        _userManager = userManager;
+        _userManager = userManager; _audit = audit;
     }
 
     private bool IsPrivileged => User.IsInRole("Admin") || User.IsInRole("Manager");
@@ -90,7 +90,7 @@ public class CustomersController : Controller
         c.CustomerCode = $"CUST-{c.CustomerId:D4}";
         await _db.SaveChangesAsync();
 
-        // Phase 4: yahan audit log "Create Customer" likhenge
+        await _audit.LogAsync("Create Customer", "Customer");
         TempData["Success"] = "Customer created successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -145,7 +145,7 @@ public class CustomersController : Controller
 
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Update Customer"
+        await _audit.LogAsync("Update Customer", "Customer");
         TempData["Success"] = "Customer updated successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -166,7 +166,7 @@ public class CustomersController : Controller
         _db.Customers.Remove(c);
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Delete Customer"
+        await _audit.LogAsync("Delete Customer", "Customer");
         TempData["Success"] = "Customer deleted.";
         return RedirectToAction(nameof(Index));
     }

@@ -1,4 +1,4 @@
-using AcxiomCRM.Data;
+﻿using AcxiomCRM.Data;
 using AcxiomCRM.Models;
 using AcxiomCRM.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -20,13 +20,13 @@ public class OpportunitiesController : Controller
     private static bool IsActiveStage(string stage) => stage != "Won" && stage != "Lost";
     private static string StatusFor(string stage) => stage == "Won" ? "Won" : stage == "Lost" ? "Lost" : "Open";
 
-    private readonly ApplicationDbContext _db;
+    private readonly ApplicationDbContext _db; private readonly AcxiomCRM.Services.IAuditService _audit;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public OpportunitiesController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public OpportunitiesController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, AcxiomCRM.Services.IAuditService audit)
     {
         _db = db;
-        _userManager = userManager;
+        _userManager = userManager; _audit = audit;
     }
 
     private bool IsPrivileged => User.IsInRole("Admin") || User.IsInRole("Manager");
@@ -134,7 +134,7 @@ public class OpportunitiesController : Controller
         _db.Opportunities.Add(opp);
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Create Opportunity"
+        await _audit.LogAsync("Create Opportunity", "Opportunity", opp.OpportunityId.ToString(), opp.OpportunityName);
         TempData["Success"] = "Opportunity created successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -196,7 +196,7 @@ public class OpportunitiesController : Controller
 
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Update Opportunity / stage change"
+        await _audit.LogAsync("Update Opportunity", "Opportunity", opp.OpportunityId.ToString(), $"Stage: {opp.Stage}");
         TempData["Success"] = "Opportunity updated successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -211,7 +211,7 @@ public class OpportunitiesController : Controller
         _db.Opportunities.Remove(opp);
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Delete Opportunity"
+        await _audit.LogAsync("Delete Opportunity", "Opportunity", id.ToString(), opp.OpportunityName);
         TempData["Success"] = "Opportunity deleted.";
         return RedirectToAction(nameof(Index));
     }

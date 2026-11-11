@@ -1,4 +1,4 @@
-using AcxiomCRM.Data;
+﻿using AcxiomCRM.Data;
 using AcxiomCRM.Models;
 using AcxiomCRM.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -29,13 +29,13 @@ public class LeadsController : Controller
         ["Lost"] = Array.Empty<string>()
     };
 
-    private readonly ApplicationDbContext _db;
+    private readonly ApplicationDbContext _db; private readonly AcxiomCRM.Services.IAuditService _audit;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public LeadsController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public LeadsController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, AcxiomCRM.Services.IAuditService audit)
     {
         _db = db;
-        _userManager = userManager;
+        _userManager = userManager; _audit = audit;
     }
 
     private bool IsPrivileged => User.IsInRole("Admin") || User.IsInRole("Manager");
@@ -149,7 +149,7 @@ public class LeadsController : Controller
         lead.LeadCode = $"LEAD-{lead.LeadId:D4}";
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Create Lead"
+        await _audit.LogAsync("Create Lead", "Lead", lead.LeadCode, lead.LeadName);
         TempData["Success"] = "Lead created successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -236,7 +236,7 @@ public class LeadsController : Controller
 
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Update Lead / status change"
+        await _audit.LogAsync("Update Lead", "Lead", lead.LeadCode, $"Status: {lead.Status}");
         TempData["Success"] = "Lead updated successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -305,7 +305,7 @@ public class LeadsController : Controller
         await _db.SaveChangesAsync();
         await tx.CommitAsync();
 
-        // Phase 4: audit log "Lead converted"
+        await _audit.LogAsync("Convert Lead", "Lead", lead.LeadCode, $"Opportunity #{opp.OpportunityId}");
         TempData["Success"] = reused
             ? "Lead converted. Existing customer use hua aur naya opportunity ban gaya."
             : "Lead converted: naya Customer aur Opportunity ban gaya.";
@@ -328,7 +328,7 @@ public class LeadsController : Controller
         _db.Leads.Remove(lead);
         await _db.SaveChangesAsync();
 
-        // Phase 4: audit log "Delete Lead"
+        await _audit.LogAsync("Delete Lead", "Lead", id.ToString(), lead.LeadName);
         TempData["Success"] = "Lead deleted.";
         return RedirectToAction(nameof(Index));
     }

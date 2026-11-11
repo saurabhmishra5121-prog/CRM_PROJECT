@@ -37,6 +37,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AcxiomCRM.Services.IAuditService, AcxiomCRM.Services.AuditService>();
+
 builder.Services.AddControllersWithViews(options =>
 {
     // Har state-changing POST par anti-forgery check
