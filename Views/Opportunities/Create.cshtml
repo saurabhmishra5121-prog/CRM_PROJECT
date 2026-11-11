@@ -1,0 +1,11 @@
+﻿@model AcxiomCRM.ViewModels.OpportunityViewModel
+@{ ViewData["Title"] = "New Opportunity"; }
+
+<h3 class="mb-3">New Opportunity</h3>
+<form asp-action="Create" method="post">
+    <partial name="_OpportunityForm" model="Model" />
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

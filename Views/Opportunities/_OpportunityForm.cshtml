@@ -1,0 +1,78 @@
+@model AcxiomCRM.ViewModels.OpportunityViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="OpportunityId" />
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="OpportunityName" class="form-label"></label>
+        <input asp-for="OpportunityName" class="form-control" />
+        <span asp-validation-for="OpportunityName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="CustomerId" class="form-label"></label>
+        <select asp-for="CustomerId" asp-items="(SelectList)ViewBag.CustomerOptions" class="form-select"></select>
+        <span asp-validation-for="CustomerId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Amount" class="form-label"></label>
+        <input asp-for="Amount" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Probability" class="form-label">Probability (%)</label>
+        <input asp-for="Probability" type="number" class="form-control" />
+        <span asp-validation-for="Probability" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Stage" class="form-label"></label>
+        <select asp-for="Stage" asp-items="(SelectList)ViewBag.StageOptions" class="form-select"></select>
+        <span asp-validation-for="Stage" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="ExpectedCloseDate" class="form-label"></label>
+        <input asp-for="ExpectedCloseDate" type="date" class="form-control" />
+        <span asp-validation-for="ExpectedCloseDate" class="text-danger"></span>
+        <span id="dateMsg" class="text-danger"></span>
+    </div>
+    @if ((bool)ViewBag.CanAssign)
+    {
+        <div class="col-md-6 mb-3">
+            <label asp-for="AssignedTo" class="form-label"></label>
+            <select asp-for="AssignedTo" asp-items="(SelectList)ViewBag.UserOptions" class="form-select"></select>
+            <span asp-validation-for="AssignedTo" class="text-danger"></span>
+        </div>
+    }
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var stage = document.getElementById('Stage');
+    var date = document.getElementById('ExpectedCloseDate');
+    var msg = document.getElementById('dateMsg');
+    if (!stage || !date || !msg) return;
+
+    function isActive() { return stage.value !== 'Won' && stage.value !== 'Lost'; }
+
+    function check() {
+        msg.textContent = '';
+        if (!date.value) return true;
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var chosen = new Date(date.value + 'T00:00:00');
+        if (isActive() && chosen < today) {
+            msg.textContent = 'Expected Close Date cannot be in the past.';
+            return false;
+        }
+        return true;
+    }
+
+    stage.addEventListener('change', check);
+    date.addEventListener('change', check);
+    if (date.form) {
+        date.form.addEventListener('submit', function (e) {
+            if (!check()) e.preventDefault();
+        });
+    }
+});
+</script>

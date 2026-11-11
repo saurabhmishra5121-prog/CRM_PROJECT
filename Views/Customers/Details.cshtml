@@ -1,0 +1,18 @@
+﻿@model AcxiomCRM.Models.Customer
+@{ ViewData["Title"] = "Customer Details"; }
+
+<h3 class="mb-3">Customer Details</h3>
+<dl class="row">
+    <dt class="col-sm-3">Code</dt><dd class="col-sm-9">@Model.CustomerCode</dd>
+    <dt class="col-sm-3">Name</dt><dd class="col-sm-9">@Model.CustomerName</dd>
+    <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.Email</dd>
+    <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">@Model.Phone</dd>
+    <dt class="col-sm-3">Company</dt><dd class="col-sm-9">@Model.CompanyName</dd>
+    <dt class="col-sm-3">Address</dt><dd class="col-sm-9">@Model.Address</dd>
+    <dt class="col-sm-3">City / State</dt><dd class="col-sm-9">@Model.City @Model.State</dd>
+    <dt class="col-sm-3">Status</dt><dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Created</dt><dd class="col-sm-9">@Model.CreatedDate.ToString("dd MMM yyyy HH:mm")</dd>
+    <dt class="col-sm-3">Last Modified</dt><dd class="col-sm-9">@(Model.ModifiedDate?.ToString("dd MMM yyyy HH:mm") ?? "-")</dd>
+</dl>
+<a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-primary">Edit</a>
+<a asp-action="Index" class="btn btn-outline-secondary">Back</a>

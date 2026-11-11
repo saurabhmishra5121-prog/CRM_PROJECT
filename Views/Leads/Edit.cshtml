@@ -1,0 +1,12 @@
+﻿@model AcxiomCRM.ViewModels.LeadViewModel
+@{ ViewData["Title"] = "Edit Lead"; }
+
+<h3 class="mb-3">Edit Lead</h3>
+<p class="text-muted">Status sirf allowed agle steps mein badal sakta hai. Qualified lead ko Details page se Convert karo.</p>
+<form asp-action="Edit" method="post">
+    <partial name="_LeadForm" model="Model" />
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

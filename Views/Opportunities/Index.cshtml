@@ -1,0 +1,107 @@
+@model IEnumerable<AcxiomCRM.Models.Opportunity>
+@{
+    ViewData["Title"] = "Opportunities";
+    var search = ViewBag.Search as string;
+    var stage = ViewBag.Stage as string;
+    var status = ViewBag.Status as string;
+    int page = ViewBag.Page;
+    int totalPages = ViewBag.TotalPages;
+    bool canDelete = User.IsInRole("Admin") || User.IsInRole("Manager");
+    var names = (Dictionary<string, string>)ViewBag.UserNames;
+    decimal openPipeline = ViewBag.OpenPipeline;
+    decimal weighted = ViewBag.Weighted;
+    var stages = new[] { "Qualification", "Proposal", "Negotiation", "Won", "Lost" };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Opportunities</h3>
+    <a asp-action="Create" class="btn btn-primary">+ New Opportunity</a>
+</div>
+
+<div class="mb-3">
+    <span class="badge bg-primary fs-6">Open Pipeline: Rs. @openPipeline.ToString("N2")</span>
+    <span class="badge bg-success fs-6">Weighted: Rs. @weighted.ToString("N2")</span>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="search" value="@search" class="form-control" placeholder="Opportunity ya customer name" />
+    </div>
+    <div class="col-md-3">
+        <select name="stage" class="form-select">
+            <option value="">All Stages</option>
+            @foreach (var s in stages)
+            {
+                <option value="@s" selected="@(stage == s)">@s</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select">
+            <option value="">All Status</option>
+            <option value="Open" selected="@(status == "Open")">Open</option>
+            <option value="Won" selected="@(status == "Won")">Won</option>
+            <option value="Lost" selected="@(status == "Lost")">Lost</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-dark">Search</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th><th>Customer</th><th>Stage</th><th>Amount</th><th>Prob %</th>
+                <th>Weighted</th><th>Close Date</th><th>Status</th><th>Owner</th><th style="width:210px">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var o in Model)
+        {
+            var cls = o.Status == "Won" ? "bg-success" : o.Status == "Lost" ? "bg-danger" : "bg-primary";
+            var owner = o.AssignedTo != null && names.TryGetValue(o.AssignedTo, out var n) ? n : "-";
+            <tr>
+                <td>@o.OpportunityName</td>
+                <td>@o.Customer?.CustomerName</td>
+                <td>@o.Stage</td>
+                <td>@o.Amount.ToString("N2")</td>
+                <td>@o.Probability</td>
+                <td>@((o.Amount * o.Probability / 100m).ToString("N2"))</td>
+                <td>@o.ExpectedCloseDate.ToString("dd MMM yyyy")</td>
+                <td><span class="badge @cls">@o.Status</span></td>
+                <td>@owner</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@o.OpportunityId" class="btn btn-sm btn-outline-info">Details</a>
+                    <a asp-action="Edit" asp-route-id="@o.OpportunityId" class="btn btn-sm btn-outline-primary">Edit</a>
+                    @if (canDelete)
+                    {
+                        <form asp-action="Delete" asp-route-id="@o.OpportunityId" method="post" class="d-inline"
+                              onsubmit="return confirm('Is opportunity ko delete karna hai?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="10" class="text-center text-muted">Koi opportunity nahi mili.</td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<nav>
+    <ul class="pagination">
+        <li class="page-item @(page <= 1 ? "disabled" : "")">
+            <a class="page-link" asp-action="Index" asp-route-page="@(page - 1)" asp-route-search="@search" asp-route-stage="@stage" asp-route-status="@status">Prev</a>
+        </li>
+        <li class="page-item disabled"><span class="page-link">Page @(page) of @(totalPages)</span></li>
+        <li class="page-item @(page >= totalPages ? "disabled" : "")">
+            <a class="page-link" asp-action="Index" asp-route-page="@(page + 1)" asp-route-search="@search" asp-route-stage="@stage" asp-route-status="@status">Next</a>
+        </li>
+    </ul>
+</nav>

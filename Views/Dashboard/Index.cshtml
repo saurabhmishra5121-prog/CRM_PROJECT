@@ -1,0 +1,102 @@
+﻿@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+    decimal openPipeline = ViewBag.OpenPipeline;
+    decimal weighted = ViewBag.WeightedPipeline;
+    decimal won = ViewBag.WonAmount;
+}
+
+<h3 class="mb-3">Dashboard</h3>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-bg-primary h-100"><div class="card-body">
+            <div class="small">Total Customers</div>
+            <div class="fs-2 fw-bold">@ViewBag.TotalCustomers</div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-info h-100"><div class="card-body">
+            <div class="small">Total Leads</div>
+            <div class="fs-2 fw-bold">@ViewBag.TotalLeads</div>
+            <div class="small">Converted: @ViewBag.ConvertedLeads</div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning h-100"><div class="card-body">
+            <div class="small">Open Opportunities</div>
+            <div class="fs-2 fw-bold">@ViewBag.OpenOpportunities</div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success h-100"><div class="card-body">
+            <div class="small">Won Amount</div>
+            <div class="fs-2 fw-bold">Rs. @won.ToString("N0")</div>
+            <div class="small">Deals won: @ViewBag.WonCount</div>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body">
+            <div class="small text-muted">Open Pipeline Value</div>
+            <div class="fs-3 fw-bold">Rs. @openPipeline.ToString("N2")</div>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body">
+            <div class="small text-muted">Weighted Pipeline Value</div>
+            <div class="fs-3 fw-bold">Rs. @weighted.ToString("N2")</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body">
+            <h6 class="card-title">Leads by Status</h6>
+            <canvas id="leadChart"></canvas>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body">
+            <h6 class="card-title">Opportunities by Stage</h6>
+            <canvas id="stageChart"></canvas>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body">
+            <h6 class="card-title">Pipeline Value by Stage (Rs.)</h6>
+            <canvas id="amountChart"></canvas>
+        </div></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        var leadLabels = @Html.Raw(JsonSerializer.Serialize((string[])ViewBag.LeadLabels));
+        var leadCounts = @Html.Raw(JsonSerializer.Serialize((int[])ViewBag.LeadCounts));
+        var stageLabels = @Html.Raw(JsonSerializer.Serialize((string[])ViewBag.StageLabels));
+        var stageCounts = @Html.Raw(JsonSerializer.Serialize((int[])ViewBag.StageCounts));
+        var stageAmounts = @Html.Raw(JsonSerializer.Serialize((decimal[])ViewBag.StageAmounts));
+
+        new Chart(document.getElementById('leadChart'), {
+            type: 'doughnut',
+            data: { labels: leadLabels, datasets: [{ data: leadCounts,
+                backgroundColor: ['#0d6efd','#0dcaf0','#198754','#ffc107','#212529','#6c757d'] }] }
+        });
+
+        new Chart(document.getElementById('stageChart'), {
+            type: 'bar',
+            data: { labels: stageLabels, datasets: [{ label: 'Opportunities', data: stageCounts,
+                backgroundColor: '#0d6efd' }] },
+            options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('amountChart'), {
+            type: 'bar',
+            data: { labels: stageLabels, datasets: [{ label: 'Amount', data: stageAmounts,
+                backgroundColor: '#198754' }] },
+            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+        });
+    </script>
+}
